@@ -10,6 +10,7 @@
   stdenv,
   autoPatchelfHook,
   makeDesktopItem,
+  soundflow-miniaudio,
 }:
 let
   desktopItem = makeDesktopItem {
@@ -53,7 +54,8 @@ buildDotnetModule {
     libsm
     libxfixes
     fontconfig
-  ];
+  ]
+  ++ (if stdenv.hostPlatform.system == "loongarch64-linux" then [ soundflow-miniaudio ] else [ ]);
   executables = [ "ClassIsland.Desktop" ];
   nativeBuildInputs = [
     git
@@ -62,7 +64,7 @@ buildDotnetModule {
   ];
   postInstall = ''
     mkdir -p $out/share/applications
-    cp ${desktopItem}/share/applications/cn.classisland.app.desktop $out/share/applications/cn.classisland.app.desktop 
+    cp ${desktopItem}/share/applications/cn.classisland.app.desktop $out/share/applications/cn.classisland.app.desktop
     mkdir -p $out/share/icons/hicolor/scalable/apps/
     cp ClassIsland.Desktop/Assets/AppLogo.svg $out/share/icons/hicolor/scalable/apps/cn.classisland.app.svg
     printf deb > $out/lib/classisland/PackageType

@@ -9,15 +9,27 @@
       ...
     }:
     # TODO: darwin support
-    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (
+    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" "loongarch64-linux" ] (
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+        classisland = pkgs.callPackage ./tools/nix/classisland.nix {
+          soundflow-miniaudio = pkgs.callPackage ./tools/nix/soundflow-miniaudio.nix { };
+        };
+        classisland-bin = pkgs.callPackage ./tools/nix/classisland-bin.nix { };
       in
       {
-        packages.classisland = pkgs.callPackage ./tools/nix/classisland.nix { };
-        packages.classisland-bin = pkgs.callPackage ./tools/nix/classisland-bin.nix { };
-        packages.default = pkgs.callPackage ./tools/nix/classisland-bin.nix { };
+        packages =
+          if system != "loongarch64-linux" then
+            {
+              inherit classisland classisland-bin;
+              default = classisland-bin;
+            }
+          else
+            {
+              inherit classisland;
+              default = classisland;
+            };
       }
     );
 }
